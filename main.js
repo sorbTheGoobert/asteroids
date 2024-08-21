@@ -2,11 +2,12 @@ const steroidsTheGame = document.getElementById("game");
 const ctx = steroidsTheGame.getContext("2d");
 const starAmount = Math.floor(Math.random() * 26) + 225;
 const stars_location = new Array(starAmount);
-let steroid_amount = 100;
+let steroid_amount = 10;
 let funnyMode_jesterArrows = false;
 let funnyMode_wowTheyComeBack = false;
 let funnyMode_neverDieMode = false;
 let funnyMode_spinBot = false;
+let funnyMode_debugMode = false;
 let funnyMode_ruinTheFun = false;
 let pulsed = false;
 let gameLoop;
@@ -46,13 +47,15 @@ const player = {
     ctx.stroke();
     ctx.fill();
     ctx.restore();
-    // ctx.fillStyle = "red";
-    // ctx.fillRect(
-    //   player.hitbox_xPos,
-    //   player.hitbox_yPos,
-    //   player.hitbox_size,
-    //   player.hitbox_size
-    // );
+    if (funnyMode_debugMode && !funnyMode_neverDieMode) {
+      ctx.strokeStyle = "yellow";
+      ctx.strokeRect(
+        player.hitbox_xPos,
+        player.hitbox_yPos,
+        player.hitbox_size,
+        player.hitbox_size
+      );
+    }
   },
   update: () => {
     if (player.keys.a) {
@@ -226,14 +229,13 @@ window.addEventListener("keypress", (event) => {
     player.projectile.push(
       new Projectile(player.xPos, player.yPos, player.angle)
     );
-  }else{
+  } else {
     pulsed = false;
   }
 });
 
 class Steroid {
   constructor() {
-    // true = from top, false = from left
     let seed = Math.random() > 0.5;
     if (seed) {
       this.xPos = Math.random() * 850 - 50;
@@ -253,20 +255,11 @@ class Steroid {
         this.yPos = 600;
       }
     }
-    // this.xPos = seed
-    //   ? Math.random() * 850 - 50
-    //   : Math.random() > 0.5
-    //   ? -50
-    //   : 800;
-    // this.yPos = seed
-    //   ? Math.random() > 0.5
-    //     ? -50
-    //     : 600
-    //   : Math.random() * 650 - 50;
     this.horizontal_velocity = Math.sign(Math.random() - 0.5) * Math.random(); // -10 - -5 - 5 - 10
     this.vertical_velocity = Math.sign(Math.random() - 0.5) * Math.random(); // -10 - -5 - 5 - 10
     this.size = 50;
     this.color = "grey";
+    this.sprite = document.getElementById("steroid");
   }
   update = () => {
     if (funnyMode_ruinTheFun) {
@@ -342,8 +335,11 @@ class Steroid {
   };
   draw = () => {
     if (!steroids.includes(this)) return null;
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.xPos, this.yPos, this.size, this.size);
+    ctx.drawImage(this.sprite, this.xPos - 10, this.yPos - 10, 70, 70);
+    if(funnyMode_debugMode){
+      ctx.strokeStyle = "red";
+      ctx.strokeRect(this.xPos, this.yPos, this.size, this.size);
+    }
   };
 }
 
@@ -389,7 +385,6 @@ function drawStars(firstTime) {
     ctx.closePath();
   }
 }
-
 
 function drawAimbotShots() {
   if (funnyMode_spinBot && pulsed) {
@@ -447,6 +442,12 @@ function update() {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, 800, 600);
   drawStars();
+  while (steroid_amount > steroids.length) {
+    steroids.push(new Steroid());
+  }
+  while (steroid_amount < steroids.length) {
+    steroids.pop();
+  }
   steroids.forEach((elem) => {
     elem.update();
     elem.draw();

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asteroids!11!</title>
+  <title>Steroids!11!</title>
   <link rel="stylesheet" href="./assets/style.css">
 </head>
 
@@ -29,11 +29,22 @@
         Spin bot: <input type="checkbox" name="goodShotMate" id="goodShotMate"
           onchange="funnyMode_spinBot = document.getElementById('goodShotMate').checked === true ? true : false">
       </label>
+      <label for="hitbox">
+        hitbox: <input type="checkbox" name="hitbox" id="hitbox"
+          onchange="funnyMode_debugMode = document.getElementById('hitbox').checked === true ? true : false">
+      </label>
       <label for="comnstopcheating">
         Ruin the fun: <input type="checkbox" name="comnstopcheating" id="comnstopcheating"
           onchange="funnyMode_ruinTheFun = document.getElementById('comnstopcheating').checked === true ? true : false">
       </label>
+      <label for="overdose">
+        How much steroid?: <input type="number" name="overdose" id="overdose"
+          onchange="steroid_amount = parseInt(Math.floor(document.getElementById('overdose').value))" placeholder="12" value="12">
+      </label>
     </div>
+  </div>
+  <div class="assets">
+    <img src="./assets/steroid.png" id="steroid">
   </div>
   <script src="./main.js"></script>
 </body>

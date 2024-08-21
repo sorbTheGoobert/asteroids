@@ -32,6 +32,10 @@ label {
   text-align: center;
 }
 
+.assets {
+  display: none;
+}
+
 @font-face {
   font-family: "bepbop";
   src: url(./bepbop.ttf);
