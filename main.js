@@ -1,11 +1,25 @@
-const steroids = document.getElementById("game");
-const ctx = steroids.getContext("2d");
+const steroidsTheGame = document.getElementById("game");
+const ctx = steroidsTheGame.getContext("2d");
+const starAmount = Math.floor(Math.random() * 26) + 225;
+const stars_location = new Array(starAmount);
+let steroid_amount = 100;
+let funnyMode_jesterArrows = false;
+let funnyMode_wowTheyComeBack = false;
+let funnyMode_neverDieMode = false;
+let funnyMode_spinBot = false;
+let funnyMode_ruinTheFun = false;
+let pulsed = false;
+let gameLoop;
+let lost = false;
 
 const player = {
   size: 25,
   length: 30,
-  xPos: (800 - 25) / 2,
+  xPos: (800 - 30) / 2,
   yPos: (600 - 25) / 2,
+  hitbox_xPos: (800 - 30) / 2 - 8,
+  hitbox_yPos: (800 - 25) / 2 - 8,
+  hitbox_size: 16,
   vertical_velocity: 0,
   horizontal_velocity: 0,
   color: "white",
@@ -17,6 +31,7 @@ const player = {
   angle: 0,
   turning_speed: 0.075,
   projectile: [],
+  points: 0,
   draw: () => {
     ctx.save();
     ctx.fillStyle = player.color;
@@ -31,6 +46,13 @@ const player = {
     ctx.stroke();
     ctx.fill();
     ctx.restore();
+    // ctx.fillStyle = "red";
+    // ctx.fillRect(
+    //   player.hitbox_xPos,
+    //   player.hitbox_yPos,
+    //   player.hitbox_size,
+    //   player.hitbox_size
+    // );
   },
   update: () => {
     if (player.keys.a) {
@@ -39,6 +61,7 @@ const player = {
     if (player.keys.d) {
       player.angle += player.turning_speed;
     }
+    if (funnyMode_spinBot) player.angle += Math.random() * (2 * Math.PI);
     if (player.angle < 0) player.angle += 2 * Math.PI;
     if (player.angle > 2 * Math.PI) player.angle -= 2 * Math.PI;
     if (player.keys.w) {
@@ -47,12 +70,27 @@ const player = {
     }
     player.xPos += player.horizontal_velocity;
     player.yPos += player.vertical_velocity;
+    player.hitbox_xPos = player.xPos - 8;
+    player.hitbox_yPos = player.yPos - 8;
     if (player.xPos < 0) player.xPos += 800;
     if (player.xPos > 800) player.xPos -= 800;
     if (player.yPos < 0) player.yPos += 600;
     if (player.yPos > 600) player.yPos -= 600;
     player.vertical_velocity *= 0.99;
     player.horizontal_velocity *= 0.99;
+    if (funnyMode_neverDieMode) return null;
+    let hitSteroids = steroids.filter((elem) => {
+      return (
+        elem.xPos <= player.hitbox_xPos + player.hitbox_size &&
+        elem.xPos + elem.size >= player.hitbox_xPos &&
+        elem.yPos <= player.hitbox_yPos + player.hitbox_size &&
+        elem.yPos + elem.size >= player.hitbox_yPos
+      );
+    });
+    if (hitSteroids.length >= 1) {
+      clearInterval(gameLoop);
+      lost = true;
+    }
   },
 };
 
@@ -68,33 +106,45 @@ class Projectile {
   update = () => {
     this.xPos += this.horizontal_velocity;
     this.yPos += this.vertical_velocity;
-    const index = findProj();
-    if (index !== null) {
-      let temp = [];
-      let pointer = player.projectile.length - 1;
-      while (pointer !== index) {
-        temp.push(player.projectile.pop());
-        pointer--;
-      }
-      player.projectile.pop();
-      while (temp.length) {
-        player.projectile.push(temp.pop());
-      }
-    }
-    rocks.filter(elem => {
+    // let index = findProj();
+    let index = player.projectile.indexOf(this);
+    let hitSteroids = steroids.filter((elem) => {
       return (
-        elem.xPos >= this.xPos + this.radius &&
-        elem.xPos + elem.size <= this.xPos &&
-        elem.yPos >= this.yPos + this.radius &&
-        elem.yPos + elem.size <= this.yPos
-      )
-    }).forEach(elem => {
-      this.xPos = Math.random() > 0.5 ? 800 : -50;
-      this.yPos = Math.random() > 0.5 ? 600 : -50;
-      this.horizontal_velocity = Math.sign(Math.random() - 0.5) * Math.random();
-      this.vertical_velocity = Math.sign(Math.random() - 0.5) * Math.random();
-      console.log("hi")
-    })
+        elem.xPos <= this.xPos + this.radius &&
+        elem.xPos + elem.size >= this.xPos &&
+        elem.yPos <= this.yPos + this.radius &&
+        elem.yPos + elem.size >= this.yPos
+      );
+    });
+    if (hitSteroids.length >= 1) {
+      const steroidIndex = steroids.indexOf(hitSteroids[0]);
+      if (!funnyMode_jesterArrows) removeElem(index, player.projectile);
+      steroids[steroidIndex].xPos = Math.random() > 0.5 ? 800 : -50;
+      steroids[steroidIndex].yPos = Math.random() > 0.5 ? 600 : -50;
+      steroids[steroidIndex].horizontal_velocity =
+        Math.sign(Math.random() - 0.5) * Math.random();
+      steroids[steroidIndex].vertical_velocity =
+        Math.sign(Math.random() - 0.5) * Math.random();
+      player.points++;
+      return null;
+    }
+
+    if (funnyMode_wowTheyComeBack) {
+      if (this.xPos < 0) this.xPos += 800;
+      if (this.xPos > 800) this.xPos -= 800;
+      if (this.yPos < 0) this.yPos += 600;
+      if (this.yPos > 600) this.yPos -= 600;
+      return null;
+    }
+
+    if (
+      this.xPos - this.radius > 800 ||
+      this.xPos + this.radius < 0 ||
+      this.yPos - this.radius > 600 ||
+      this.yPos + this.radius < 0
+    ) {
+      removeElem(index, player.projectile);
+    }
   };
   draw = () => {
     ctx.fillStyle = this.color;
@@ -107,18 +157,33 @@ class Projectile {
   };
 }
 
-function findProj() {
-  for (i = 0; i < player.projectile.length; i++) {
-    if (
-      player.projectile[i].xPos - player.projectile[i].radius > 800 ||
-      player.projectile[i].xPos + player.projectile[i].radius < 0 ||
-      player.projectile[i].yPos - player.projectile[i].radius > 600 ||
-      player.projectile[i].yPos + player.projectile[i].radius < 0
-    ) {
-      return i;
-    }
+function removeElem(index, array) {
+  if (index === null) {
+    return null;
   }
-  return null;
+  let temp = [];
+  let pointer = array.length - 1;
+  while (pointer !== index) {
+    temp.push(array.pop());
+    pointer--;
+  }
+  array.pop();
+  while (temp.length) {
+    array.push(temp.pop());
+  }
+  // if (index === null) {
+  //   return null;
+  // }
+  // let temp = [];
+  // let pointer = player.projectile.length - 1;
+  // while (pointer !== index) {
+  //   temp.push(player.projectile.pop());
+  //   pointer--;
+  // }
+  // player.projectile.pop();
+  // while (temp.length) {
+  //   player.projectile.push(temp.pop());
+  // }
 }
 
 window.addEventListener("keydown", (event) => {
@@ -148,24 +213,88 @@ window.addEventListener("keyup", (event) => {
   }
 });
 window.addEventListener("keypress", (event) => {
-  if (event.code === "Space")
+  if (event.code === "Space") {
+    if (lost) {
+      lost = false;
+      init();
+      return null;
+    }
+    if (funnyMode_spinBot) {
+      pulsed = true;
+      return null;
+    }
     player.projectile.push(
       new Projectile(player.xPos, player.yPos, player.angle)
     );
+  }else{
+    pulsed = false;
+  }
 });
 
-class Rock {
+class Steroid {
   constructor() {
-    // this.xPos = Math.sign(Math.random() - 0.5) * 800;
-    // this.yPos = Math.sign(Math.random() - 0.5) * 600;
-    this.xPos = Math.random() > 0.5 ? 800 : -50;
-    this.yPos = Math.random() > 0.5 ? 600 : -50;
+    // true = from top, false = from left
+    let seed = Math.random() > 0.5;
+    if (seed) {
+      this.xPos = Math.random() * 850 - 50;
+    } else {
+      if (Math.random() > 0.5) {
+        this.xPos = -50;
+      } else {
+        this.xPos = 800;
+      }
+    }
+    if (!seed) {
+      this.yPos = Math.random() * 650 - 50;
+    } else {
+      if (Math.random() > 0.5) {
+        this.yPos = -50;
+      } else {
+        this.yPos = 600;
+      }
+    }
+    // this.xPos = seed
+    //   ? Math.random() * 850 - 50
+    //   : Math.random() > 0.5
+    //   ? -50
+    //   : 800;
+    // this.yPos = seed
+    //   ? Math.random() > 0.5
+    //     ? -50
+    //     : 600
+    //   : Math.random() * 650 - 50;
     this.horizontal_velocity = Math.sign(Math.random() - 0.5) * Math.random(); // -10 - -5 - 5 - 10
     this.vertical_velocity = Math.sign(Math.random() - 0.5) * Math.random(); // -10 - -5 - 5 - 10
     this.size = 50;
     this.color = "grey";
   }
   update = () => {
+    if (funnyMode_ruinTheFun) {
+      player.points++;
+      const random = Math.random() > 0.5;
+      // this.xPos = random ? Math.random() * 850 - 50 : -50;
+      // this.yPos = random ? -50 : Math.random() * 650 - 50;
+      if (random) {
+        this.xPos = Math.random() * 850 - 50;
+      } else {
+        if (Math.random() > 0.5) {
+          this.xPos = -50;
+        } else {
+          this.xPos = 800;
+        }
+      }
+      if (!random) {
+        this.yPos = Math.random() * 650 - 50;
+      } else {
+        if (Math.random() > 0.5) {
+          this.yPos = -50;
+        } else {
+          this.yPos = 600;
+        }
+      }
+      this.horizontal_velocity = Math.sign(Math.random() - 0.5) * Math.random();
+      this.vertical_velocity = Math.sign(Math.random() - 0.5) * Math.random();
+    }
     this.xPos += this.horizontal_velocity;
     this.yPos += this.vertical_velocity;
     if (
@@ -176,34 +305,153 @@ class Rock {
     ) {
       // this.xPos = Math.sign(Math.random() - 0.5) * 800;
       // this.yPos = Math.sign(Math.random() - 0.5) * 600;
-      this.xPos = Math.random() > 0.5 ? 800 : -50;
-      this.yPos = Math.random() > 0.5 ? 600 : -50;
+      const random = Math.random() > 0.5;
+      // this.xPos = random ? Math.random() * 850 - 50 : -50;
+      // this.yPos = random ? -50 : Math.random() * 650 - 50;
+      if (random) {
+        this.xPos = Math.random() * 850 - 50;
+      } else {
+        if (Math.random() > 0.5) {
+          this.xPos = -50;
+        } else {
+          this.xPos = 800;
+        }
+      }
+      if (!random) {
+        this.yPos = Math.random() * 650 - 50;
+      } else {
+        if (Math.random() > 0.5) {
+          this.yPos = -50;
+        } else {
+          this.yPos = 600;
+        }
+      }
       this.horizontal_velocity = Math.sign(Math.random() - 0.5) * Math.random();
       this.vertical_velocity = Math.sign(Math.random() - 0.5) * Math.random();
     }
+    // console.log(
+    //   player.projectile.filter((elem) => {
+    //     return (
+    //       this.xPos <= elem.xPos + elem.radius &&
+    //       this.xPos + this.size >= elem.xPos &&
+    //       this.yPos <= elem.yPos + elem.radius &&
+    //       this.yPos + this.size >= elem.yPos
+    //     );
+    //   })
+    // );
   };
   draw = () => {
+    if (!steroids.includes(this)) return null;
     ctx.fillStyle = this.color;
     ctx.fillRect(this.xPos, this.yPos, this.size, this.size);
   };
 }
 
-const rocks = [];
+const steroids = [];
+
+function drawGUI() {
+  ctx.fillStyle = "white";
+  ctx.fillText(player.points, 10, 10);
+}
+
+function drawStars(firstTime) {
+  firstTime = firstTime || false;
+  ctx.fillStyle = "white";
+  if (firstTime) {
+    for (let stars = 1; stars <= starAmount; stars++) {
+      stars_location[stars] = {
+        xPos: Math.random() * 850 - 50,
+        yPos: Math.random() * 650 - 50,
+      };
+      ctx.beginPath();
+      ctx.arc(
+        stars_location[stars].xPos,
+        stars_location[stars].yPos,
+        1,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+      ctx.closePath();
+    }
+    return null;
+  }
+  for (let stars = 1; stars <= starAmount; stars++) {
+    ctx.beginPath();
+    ctx.arc(
+      stars_location[stars].xPos,
+      stars_location[stars].yPos,
+      1,
+      0,
+      2 * Math.PI
+    );
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+
+function drawAimbotShots() {
+  if (funnyMode_spinBot && pulsed) {
+    player.points++;
+    steroids.forEach((elem) => {
+      player.points++;
+      const random = Math.random() > 0.5;
+      ctx.beginPath();
+      ctx.strokeStyle = "yellow";
+      ctx.moveTo(player.xPos, player.yPos);
+      ctx.lineTo(elem.xPos + elem.size / 2, elem.yPos + elem.size / 2);
+      ctx.stroke();
+      elem.xPos = random ? Math.random() * 850 - 50 : -50;
+      elem.yPos = random ? -50 : Math.random() * 650 - 50;
+      elem.horizontal_velocity = Math.sign(Math.random() - 0.5) * Math.random();
+      elem.vertical_velocity = Math.sign(Math.random() - 0.5) * Math.random();
+    });
+  }
+}
 
 function init() {
+  player.size = 25;
+  player.length = 30;
+  player.xPos = (800 - 30) / 2;
+  player.yPos = (600 - 25) / 2;
+  player.horizontal_velocity = 0;
+  player.vertical_velocity = 0;
+  player.angle = Math.floor(Math.random() * 5) * 0.5 * Math.PI;
+  player.points = 0;
+  if (funnyMode_spinBot) {
+    player.turning_speed = 0;
+  }
+  while (player.projectile.length) {
+    player.projectile.pop();
+  }
+  while (steroids.length) {
+    steroids.pop();
+  }
   ctx.clearRect(0, 0, 800, 600);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, 800, 600);
+  drawStars(true);
   player.draw();
-  for (let i = 0; i < 12; i++) {
-    rocks.push(new Rock());
+  for (let i = 0; i < steroid_amount; i++) {
+    steroids.push(new Steroid());
   }
-  setInterval(requestAnimationFrame, 1000 / 60, update);
+  ctx.font = "24px bepbop";
+  ctx.textBaseline = "top";
+  ctx.textAlign = "start";
+  drawGUI();
+  gameLoop = setInterval(requestAnimationFrame, 1000 / 60, update);
 }
 function update() {
   ctx.clearRect(0, 0, 800, 600);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, 800, 600);
+  drawStars();
+  steroids.forEach((elem) => {
+    elem.update();
+    elem.draw();
+  });
+  drawAimbotShots();
   player.update();
   player.draw();
   for (let index = 0; index < player.projectile.length; index++) {
@@ -213,10 +461,8 @@ function update() {
       player.projectile[index].draw();
     }
   }
-  rocks.forEach((elem) => {
-    elem.update();
-    elem.draw();
-  });
+  drawGUI();
+  pulsed = false;
 }
 
 window.onload = init();

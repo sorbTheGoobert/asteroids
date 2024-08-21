@@ -1,13 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asteroids!11!</title>
   <link rel="stylesheet" href="./assets/style.css">
 </head>
+
 <body>
-  <canvas id="game" width="800", height="600"></canvas>
+  <div class="container">
+    <canvas id="game" width="800" , height="600"></canvas>
+    <div class="cheat-container">
+      <label for="jester">
+        Bullets dont get destroyed from steroids: <input type="checkbox" name="jester" id="jester"
+          onchange="funnyMode_jesterArrows = document.getElementById('jester').checked === true ? true : false">
+      </label>
+      <label for="throughTimeAndSpace">
+        Bullets dont get destroyed from being outside the game: <input type="checkbox" name="throughTimeAndSpace"
+          id="throughTimeAndSpace"
+          onchange="funnyMode_wowTheyComeBack = document.getElementById('throughTimeAndSpace').checked === true ? true : false">
+      </label>
+      <label for="F3F4">
+        God mode: <input type="checkbox" name="F3F4" id="F3F4"
+          onchange="funnyMode_neverDieMode = document.getElementById('F3F4').checked === true ? true : false">
+      </label>
+      <label for="goodShotMate">
+        Spin bot: <input type="checkbox" name="goodShotMate" id="goodShotMate"
+          onchange="funnyMode_spinBot = document.getElementById('goodShotMate').checked === true ? true : false">
+      </label>
+      <label for="comnstopcheating">
+        Ruin the fun: <input type="checkbox" name="comnstopcheating" id="comnstopcheating"
+          onchange="funnyMode_ruinTheFun = document.getElementById('comnstopcheating').checked === true ? true : false">
+      </label>
+    </div>
+  </div>
   <script src="./main.js"></script>
 </body>
+
 </html>

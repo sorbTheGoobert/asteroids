@@ -1,5 +1,6 @@
 * {
   box-sizing: border-box;
+  font-family: "bepbop";
 }
 
 body {
@@ -10,6 +11,28 @@ body {
   min-height: 100vh;
 }
 
-#game {
+/* #game {
   border: 5px green solid;
+} */
+
+.container {
+  width: 800px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 20px;
+}
+.cheat-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+label {
+  text-align: center;
+}
+
+@font-face {
+  font-family: "bepbop";
+  src: url(./bepbop.ttf);
 }
