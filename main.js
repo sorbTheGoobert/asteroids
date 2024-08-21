@@ -33,6 +33,8 @@ const player = {
   turning_speed: 0.075,
   projectile: [],
   points: 0,
+  good_shot_mate: new Audio("./assets/BOTSOUNDINTENSIFIES.mp3"),
+  wompwomp: new Audio("./assets/WOMPWOMP.mp3"),
   draw: () => {
     ctx.save();
     ctx.fillStyle = player.color;
@@ -92,6 +94,8 @@ const player = {
     });
     if (hitSteroids.length >= 1) {
       clearInterval(gameLoop);
+      player.wompwomp.fastSeek(0.35);
+      player.wompwomp.play();
       lost = true;
     }
   },
@@ -105,6 +109,7 @@ class Projectile {
     this.horizontal_velocity = Math.cos(angle) * 10;
     this.vertical_velocity = Math.sin(angle) * 10;
     this.color = "white";
+    this.pew = new Audio("./assets/pew.mp3");
   }
   update = () => {
     this.xPos += this.horizontal_velocity;
@@ -128,6 +133,9 @@ class Projectile {
         Math.sign(Math.random() - 0.5) * Math.random();
       steroids[steroidIndex].vertical_velocity =
         Math.sign(Math.random() - 0.5) * Math.random();
+      steroids[steroidIndex].dann.volume = 0.1;
+      steroids[steroidIndex].dann.fastSeek(0.42);
+      steroids[steroidIndex].dann.play();
       player.points++;
       return null;
     }
@@ -224,11 +232,15 @@ window.addEventListener("keypress", (event) => {
     }
     if (funnyMode_spinBot) {
       pulsed = true;
+      player.good_shot_mate.fastSeek(0.1);
+      player.good_shot_mate.play();
       return null;
     }
     player.projectile.push(
       new Projectile(player.xPos, player.yPos, player.angle)
     );
+    player.projectile[player.projectile.length - 1].pew.fastSeek(0.2);
+    player.projectile[player.projectile.length - 1].pew.play();
   } else {
     pulsed = false;
   }
@@ -260,6 +272,7 @@ class Steroid {
     this.size = 50;
     this.color = "grey";
     this.sprite = document.getElementById("steroid");
+    this.dann = new Audio("./assets/bap.mp3");
   }
   update = () => {
     if (funnyMode_ruinTheFun) {
@@ -336,7 +349,7 @@ class Steroid {
   draw = () => {
     if (!steroids.includes(this)) return null;
     ctx.drawImage(this.sprite, this.xPos - 10, this.yPos - 10, 70, 70);
-    if(funnyMode_debugMode){
+    if (funnyMode_debugMode) {
       ctx.strokeStyle = "red";
       ctx.strokeRect(this.xPos, this.yPos, this.size, this.size);
     }
@@ -401,6 +414,9 @@ function drawAimbotShots() {
       elem.yPos = random ? -50 : Math.random() * 650 - 50;
       elem.horizontal_velocity = Math.sign(Math.random() - 0.5) * Math.random();
       elem.vertical_velocity = Math.sign(Math.random() - 0.5) * Math.random();
+      elem.dann.volume = 0.1;
+      elem.dann.fastSeek(0.42);
+      elem.dann.play();
     });
   }
 }
