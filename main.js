@@ -95,7 +95,7 @@ const player = {
     if (hitSteroids.length >= 1) {
       clearInterval(gameLoop);
       player.GETOUT.volume = 0.1;
-      player.GETOUT.fastSeek(0.35);
+      player.GETOUT.currentTime = 0.35;
       player.GETOUT.play();
       lost = true;
     }
@@ -135,7 +135,7 @@ class Projectile {
       steroids[steroidIndex].vertical_velocity =
         Math.sign(Math.random() - 0.5) * Math.random();
       steroids[steroidIndex].dann.volume = 0.1;
-      steroids[steroidIndex].dann.fastSeek(0.42);
+      steroids[steroidIndex].dann.currentTime = 0.42;
       steroids[steroidIndex].dann.play();
       player.points++;
       return null;
@@ -233,7 +233,7 @@ window.addEventListener("keypress", (event) => {
     }
     if (funnyMode_spinBot) {
       pulsed = true;
-      player.good_shot_mate.fastSeek(0.1);
+      player.good_shot_mate.currentTime = 0.1;
       player.good_shot_mate.play();
       return null;
     }
@@ -241,7 +241,7 @@ window.addEventListener("keypress", (event) => {
       new Projectile(player.xPos, player.yPos, player.angle)
     );
     player.projectile[player.projectile.length - 1].pew.volume = 0.1;
-    player.projectile[player.projectile.length - 1].pew.fastSeek(0.2);
+    player.projectile[player.projectile.length - 1].pew.currentTime = 0.2;
     player.projectile[player.projectile.length - 1].pew.play();
   } else {
     pulsed = false;
@@ -417,7 +417,7 @@ function drawAimbotShots() {
       elem.horizontal_velocity = Math.sign(Math.random() - 0.5) * Math.random();
       elem.vertical_velocity = Math.sign(Math.random() - 0.5) * Math.random();
       elem.dann.volume = 0.1;
-      elem.dann.fastSeek(0.42);
+      elem.dann.currentTime = 0.42;
       elem.dann.play();
     });
   }
