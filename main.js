@@ -34,7 +34,7 @@ const player = {
   projectile: [],
   points: 0,
   good_shot_mate: new Audio("./assets/BOTSOUNDINTENSIFIES.mp3"),
-  wompwomp: new Audio("./assets/WOMPWOMP.mp3"),
+  GETOUT: new Audio("./assets/GETOUT.mp3"),
   draw: () => {
     ctx.save();
     ctx.fillStyle = player.color;
@@ -94,8 +94,9 @@ const player = {
     });
     if (hitSteroids.length >= 1) {
       clearInterval(gameLoop);
-      player.wompwomp.fastSeek(0.35);
-      player.wompwomp.play();
+      player.GETOUT.volume = 0.1;
+      player.GETOUT.fastSeek(0.35);
+      player.GETOUT.play();
       lost = true;
     }
   },
@@ -239,6 +240,7 @@ window.addEventListener("keypress", (event) => {
     player.projectile.push(
       new Projectile(player.xPos, player.yPos, player.angle)
     );
+    player.projectile[player.projectile.length - 1].pew.volume = 0.1;
     player.projectile[player.projectile.length - 1].pew.fastSeek(0.2);
     player.projectile[player.projectile.length - 1].pew.play();
   } else {
